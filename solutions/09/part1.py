@@ -3,6 +3,7 @@
 ################################################################################
 
 import logging
+from enum import Enum
 from typing import Tuple
 
 logging.basicConfig()
@@ -11,43 +12,97 @@ log.setLevel(logging.DEBUG)
 
 #
 
+class Direction(Enum):
+    DOWN = 'D'
+    LEFT = 'L'
+    RIGHT = 'R'
+    UP = 'U'
+
+#
+
 class Rope():
 
     def __init__(self):
-        self._pos_H_X = 0
-        self._pos_H_Y = 0
-        self._pos_T_X = 0
-        self._pos_T_Y = 0
-        self.tail_trail = {}
+        self._pos_h_x = 0
+        self._pos_h_y = 0
+        self._pos_t_x = 0
+        self._pos_t_y = 0
+        self._tail_trail = []
+
+    def _calculate_delta(self) -> Tuple:
+        return (self._pos_h_x - self._pos_t_x), (self._pos_h_y - self._pos_t_y)
+
 
     @property
     def head_location(self) -> Tuple:
-        return self._pos_H_X, self._pos_H_Y
+        return self._pos_h_x, self._pos_h_y
 
-    def move_down(self, steps: int):
-        log.debug('moving down %d', steps)
-        for step in range(0, steps, 1):
-            self._pos_H_Y -= 1
+    def move(self, direction: Direction, steps: int):
 
-    def move_left(self, steps: int):
-        log.debug('moving left %d', steps)
-        for step in range(0, steps, 1):
-            self._pos_H_X -= 1
+        for step in range(0, steps):
 
-    def move_right(self, steps: int):
-        log.debug('moving right %d', steps)
-        for step in range(0, steps, 1):
-            self._pos_H_X += 1
+            if direction == Direction.DOWN:
+                self._pos_h_y -= 1
+            elif direction == Direction.LEFT:
+                self._pos_h_x -= 1
+            elif direction == Direction.RIGHT:
+                self._pos_h_x += 1
+            elif direction == Direction.UP:
+                self._pos_h_y += 1
 
-    def move_up(self, steps: int):
-        log.debug('moving up %d', steps)
-        for step in range(0, steps, 1):
-            self._pos_H_Y += 1
+            self._move_tail(direction)
+            self._record_tail_position()
+
+    def _move_tail(self, direction: Direction):
+
+        delta_x, delta_y = self._calculate_delta()
+
+        # If deltas are both 0-1, don't move anything...
+        if abs(delta_x) <= 1 and abs(delta_y) <= 1:
+            pass
+
+        elif direction == Direction.DOWN and delta_y == -2:
+            self._pos_t_y -= 1
+
+            delta_x, delta_y = self._calculate_delta()
+            if delta_x == 2:
+                self._pos_t_x -= 1
+            elif delta_x == -2:
+                self._pos_t_x += 1
+
+        elif direction == Direction.LEFT and delta_x == -2:
+            self._pos_t_x -= 1
+
+            delta_x, delta_y = self._calculate_delta()
+            if delta_y == 1:
+                self._pos_t_y -= 1
+
+        elif direction == Direction.RIGHT and delta_x == 2:
+            self._pos_t_x += 1
+
+            delta_x, delta_y = self._calculate_delta()
+            if delta_y == -1:
+                self._pos_t_y += 1
+
+        elif direction == Direction.UP and delta_y == 2:
+            self._pos_t_y += 1
+
+            delta_x, delta_y = self._calculate_delta()
+            if delta_x == -1:
+                self._pos_t_x += 1
+
+    def _record_tail_position(self):
+        position_id = f'{self._pos_t_x}:{self._pos_t_x}'
+        if position_id not in self._tail_trail:
+            self._tail_trail.append(position_id)
 
     @property
     def tail_location(self) -> Tuple:
-        return self._pos_T_X, self._pos_T_Y
+        return self._pos_t_x, self._pos_t_y
 
+    @property
+    def tail_location_count(self) -> int:
+        return len(self._tail_trail)
 
 
 # Read in the contents of our INPUT.
@@ -60,20 +115,23 @@ rope = Rope()
 for command_raw in input_data:
     command = command_raw.strip()
 
+    if log.level == logging.DEBUG:
+        head_x, head_y = rope.head_location
+        tail_x, tail_y = rope.tail_location
+        log.debug('before -> head: %d:%d | tail: %d:%d', head_x, head_y, tail_x, tail_y)
+
     log.debug('processing command: %s', command)
 
     command_parts = command.split(' ')
 
-    if command_parts[0] == 'D':
-        rope.move_down(int(command_parts[1]))
-    elif command_parts[0] == 'L':
-        rope.move_left(int(command_parts[1]))
-    elif command_parts[0] == 'R':
-        rope.move_right(int(command_parts[1]))
-    elif command_parts[0] == 'U':
-        rope.move_up(int(command_parts[1]))
+    rope.move(Direction(command_parts[0]), int(command_parts[1]))
 
-print(rope.head_location)
+    if log.level == logging.DEBUG:
+        head_x, head_y = rope.head_location
+        tail_x, tail_y = rope.tail_location
+        log.debug('after -> head: %d:%d | tail: %d:%d', head_x, head_y, tail_x, tail_y)
+
+print(rope.tail_location_count)
 
 ################################################################################
 # END 1855 too high
