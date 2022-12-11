@@ -8,7 +8,7 @@ from typing import Tuple
 
 logging.basicConfig()
 log = logging.getLogger(__name__)
-log.setLevel(logging.DEBUG)
+log.setLevel(logging.INFO)
 
 #
 
@@ -39,7 +39,7 @@ class Rope():
 
     def move(self, direction: Direction, steps: int):
 
-        for step in range(0, steps):
+        for _ in range(0, steps):
 
             if direction == Direction.DOWN:
                 self._pos_h_y -= 1
@@ -56,43 +56,33 @@ class Rope():
     def _move_tail(self, direction: Direction):
 
         delta_x, delta_y = self._calculate_delta()
+        delta_x_abs = abs(delta_x)
+        delta_y_abs = abs(delta_y)
 
-        # If deltas are both 0-1, don't move anything...
-        if abs(delta_x) <= 1 and abs(delta_y) <= 1:
-            pass
+        log.debug('delta_x: %d, delta_y: %d', delta_x, delta_y)
 
-        elif direction == Direction.DOWN and delta_y == -2:
+        if direction == Direction.DOWN and delta_y_abs == 2:
             self._pos_t_y -= 1
+            if delta_x_abs == 1:
+                self._pos_t_x += delta_x
 
-            delta_x, delta_y = self._calculate_delta()
-            if delta_x == 2:
-                self._pos_t_x -= 1
-            elif delta_x == -2:
-                self._pos_t_x += 1
-
-        elif direction == Direction.LEFT and delta_x == -2:
+        elif direction == Direction.LEFT and delta_x_abs == 2:
             self._pos_t_x -= 1
+            if delta_y_abs == 1:
+                self._pos_t_y += delta_y
 
-            delta_x, delta_y = self._calculate_delta()
-            if delta_y == 1:
-                self._pos_t_y -= 1
-
-        elif direction == Direction.RIGHT and delta_x == 2:
+        elif direction == Direction.RIGHT and delta_x_abs == 2:
             self._pos_t_x += 1
+            if delta_y_abs == 1:
+                self._pos_t_y += delta_y
 
-            delta_x, delta_y = self._calculate_delta()
-            if delta_y == -1:
-                self._pos_t_y += 1
-
-        elif direction == Direction.UP and delta_y == 2:
+        elif direction == Direction.UP and delta_y_abs == 2:
             self._pos_t_y += 1
-
-            delta_x, delta_y = self._calculate_delta()
-            if delta_x == -1:
-                self._pos_t_x += 1
+            if delta_x_abs == 1:
+                self._pos_t_x += delta_x
 
     def _record_tail_position(self):
-        position_id = f'{self._pos_t_x}:{self._pos_t_x}'
+        position_id = f'{self._pos_t_x}:{self._pos_t_y}'
         if position_id not in self._tail_trail:
             self._tail_trail.append(position_id)
 
@@ -134,5 +124,5 @@ for command_raw in input_data:
 print(rope.tail_location_count)
 
 ################################################################################
-# END 1855 too high
+# END
 ################################################################################
