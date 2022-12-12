@@ -121,6 +121,8 @@ for command_raw in input_data:
         tail_x, tail_y = rope.tail_location
         log.debug('after -> head: %d:%d | tail: %d:%d', head_x, head_y, tail_x, tail_y)
 
+for loc in rope._tail_trail:
+    print(loc)
 print(rope.tail_location_count)
 
 ################################################################################
