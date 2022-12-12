@@ -1,6 +1,5 @@
 ################################################################################
-# part2.py   6266
-#            7116 (too high)
+# part2.py
 ################################################################################
 
 import logging
@@ -112,7 +111,7 @@ class Rope():
 with open('input.txt') as input_file:
     input_data = input_file.readlines()
 
-rope = Rope(2)
+rope = Rope(10)
 
 for command_raw in input_data:
     command = command_raw.strip()
